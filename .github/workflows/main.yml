@@ -24,10 +24,10 @@ jobs:
 
     - name: Install .NET Framework 4.5.2 Developer Pack via Chocolatey
       # Installs the .NET Framework 4.5.2 Developer Pack using Chocolatey.
-      # This is a more reliable way to get older .NET Framework components on the runner.
+      # Corrected package name to 'netfx-4.5.2-devpack'.
       shell: powershell
       run: |
-        choco install dotnet4.5.2-devpack -y --no-progress
+        choco install netfx-4.5.2-devpack -y --no-progress
         Write-Host ".NET Framework 4.5.2 Developer Pack installation via Chocolatey complete."
 
     - name: Setup MSBuild
