@@ -1,16 +1,16 @@
 # This workflow builds the SilentXMRMiner project using .NET on Windows.
-# It will run automatically when changes are pushed to the 'main' branch
-# or when a pull request is opened against the 'main' branch.
+# It will run automatically when changes are pushed to the 'master' branch
+# or when a pull request is opened against the 'master' branch.
 
 name: Build SilentXMRMiner
 
 on:
   push:
     branches:
-      - master
+      - master # Change this to 'main' if your default branch is named 'main'
   pull_request:
     branches:
-      - master
+      - master # Change this to 'main' if your default branch is named 'main'
 
 jobs:
   build:
@@ -22,23 +22,21 @@ jobs:
       # Clones the repository to the runner.
       uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
-      # Installs the .NET SDK. Adjust the version if your project targets a specific .NET version (e.g., '6.0.x', '7.0.x', '8.0.x').
-      # The 'windows-latest' runner usually has several .NET versions pre-installed, but specifying ensures consistency.
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x' # Or the specific .NET version your project targets
+    - name: Setup MSBuild
+      # Installs the necessary MSBuild tools and .NET Framework targeting packs.
+      # This is crucial for building older .NET Framework projects like one targeting v4.5.
+      uses: microsoft/setup-msbuild@v1.1
 
     - name: Restore NuGet Packages
-      # Restores all NuGet packages required by the solution.
-      # This is equivalent to 'dotnet restore' command.
-      run: dotnet restore SilentXMRMiner.sln # Assuming SilentXMRMiner.sln is the solution file name
+      # Restores all NuGet packages required by the solution using MSBuild's restore target.
+      # This is the correct way to restore packages for .NET Framework projects.
+      run: msbuild SilentXMRMiner.sln /t:Restore
 
     - name: Build Project
-      # Builds the project in Release configuration.
-      # The '--no-restore' flag prevents re-restoring packages, as they are already restored in the previous step.
-      # The output will be in the 'bin/Release' directory within the project folder.
-      run: dotnet build SilentXMRMiner.sln --configuration Release --no-restore
+      # Builds the project in Release configuration using MSBuild.
+      # The /p:Configuration=Release flag sets the build configuration.
+      # The /p:Platform="Any CPU" is often needed for .NET Framework projects.
+      run: msbuild SilentXMRMiner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
     - name: Publish Build Artifacts
       # Optional: Uploads the compiled executable as a workflow artifact.
@@ -48,6 +46,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SilentXMRMiner-Executable
-        path: SilentXMRMiner/bin/Release/net8.0/ # Adjust this path to your actual build output directory
-        # If your project is a single .exe, you might specify: path: SilentXMRMiner/bin/Release/net8.0/SilentXMRMiner.exe
-        # Or if it's a self-contained deployment: path: SilentXMRMiner/bin/Release/net8.0/publish/
+        path: SilentXMRMiner/bin/Release/net45/ # Adjusted path to reflect .NET Framework 4.5 output
+        # If your project is a single .exe, you might specify: path: SilentXMRMiner/bin/Release/net45/SilentXMRMiner.exe
+        # Or if it's a self-contained deployment: path: SilentXMRMiner/bin/Release/net45/publish/
