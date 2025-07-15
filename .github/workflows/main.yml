@@ -4,7 +4,6 @@
 
 name: Build SilentXMRMiner
 
-
 on:
   push:
     branches:
@@ -15,27 +14,16 @@ on:
 
 jobs:
   build:
-    # Use a Windows environment, as .NET projects are typically built on Windows.
-    runs-on: windows-latest
+    # Use a Windows Server 2019 environment, which often has older .NET Frameworks pre-installed.
+    runs-on: windows-2019
 
     steps:
     - name: Checkout Repository
       # Clones the repository to the runner.
       uses: actions/checkout@v4
 
-    - name: Install .NET Framework 4.5.2 Developer Pack
-      # Explicitly downloads and installs the .NET Framework 4.5.2 Developer Pack (offline installer).
-      # This version is backward compatible with 4.5 and should provide the necessary reference assemblies.
-      # The installer is run silently using '/q' and '/norestart' flags.
-      shell: powershell
-      run: |
-        $url = "https://download.microsoft.com/download/E/2/1/E2164488-966B-442B-B8E0-C3B78122EE0C/NDP452-KB2901951-x86-x64-AllOS.exe"
-        $output = "$env:TEMP\NDP452SDK.exe"
-        Write-Host "Downloading .NET Framework 4.5.2 Developer Pack from $url..."
-        Invoke-WebRequest -Uri $url -OutFile $output
-        Write-Host "Installing .NET Framework 4.5.2 Developer Pack..."
-        Start-Process -FilePath $output -ArgumentList "/q /norestart" -Wait -PassThru | Out-Null
-        Write-Host ".NET Framework 4.5.2 Developer Pack installation complete."
+    # Removed the explicit .NET Framework Developer Pack installation step
+    # as we are now relying on the pre-installed components of the windows-2019 runner.
 
     - name: Setup MSBuild
       # Installs the necessary MSBuild tools. This action is still useful for setting up the environment.
