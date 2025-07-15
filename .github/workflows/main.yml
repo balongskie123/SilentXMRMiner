@@ -14,8 +14,9 @@ on:
 
 jobs:
   build:
-    # Use a Windows Server 2019 environment, which often has older .NET Frameworks pre-installed.
-    runs-on: windows-2019
+    # Use the latest Windows environment.
+    # The 'windows-2019' runner has been retired, so 'windows-latest' is used.
+    runs-on: windows-latest
 
     steps:
     - name: Checkout Repository
@@ -23,7 +24,9 @@ jobs:
       uses: actions/checkout@v4
 
     # Removed the explicit .NET Framework Developer Pack installation step
-    # as we are now relying on the pre-installed components of the windows-2019 runner.
+    # as we are now relying on the pre-installed components of the runner.
+    # If .NET Framework 4.5 is still an issue, we might need to explore other installation methods
+    # or consider upgrading the project's target framework if possible.
 
     - name: Setup MSBuild
       # Installs the necessary MSBuild tools. This action is still useful for setting up the environment.
