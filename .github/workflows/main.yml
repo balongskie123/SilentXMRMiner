@@ -22,30 +22,29 @@ jobs:
       # Clones the repository to the runner.
       uses: actions/checkout@v4
 
-    - name: Install .NET Framework 4.5 Targeting Pack via Visual Studio Installer
-      # Explicitly installs the .NET Framework 4.5 Targeting Pack using the Visual Studio Installer.
-      # This is the most reliable method to ensure the necessary reference assemblies are present.
+    - name: Install .NET Framework 4.5 Reference Assemblies
+      # Downloads the .NET Framework 4.5 reference assemblies from NuGet.org
+      # and places them into the standard reference assembly path.
+      # This directly addresses the MSB3644 error by providing the missing assemblies.
       shell: powershell
       run: |
-        # Find the path to the Visual Studio Installer executable
-        $vsInstallerPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
-        if (-not (Test-Path $vsInstallerPath)) {
-            $vsInstallerPath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\setup.exe"
-        }
-        
-        if (-not (Test-Path $vsInstallerPath)) {
-            Write-Error "Visual Studio Installer not found at expected paths."
-            exit 1
-        }
+        $nugetPackageUrl = "https://www.nuget.org/api/v2/package/Microsoft.NETFramework.ReferenceAssemblies.net45/1.0.3"
+        $downloadPath = "$env:TEMP\net45_ref_assemblies.zip"
+        $extractPath = "$env:TEMP\net45_ref_assemblies_extracted"
+        $targetPath = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5"
 
-        # Install the .NET Framework 4.5 Targeting Pack component
-        Write-Host "Installing .NET Framework 4.5 Targeting Pack..."
-        & "$vsInstallerPath" update --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --add Microsoft.Net.Component.4.5.TargetingPack --quiet --norestart
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to install .NET Framework 4.5 Targeting Pack."
-            exit 1
-        }
-        Write-Host ".NET Framework 4.5 Targeting Pack installation complete."
+        Write-Host "Downloading .NET Framework 4.5 Reference Assemblies from NuGet..."
+        Invoke-WebRequest -Uri $nugetPackageUrl -OutFile $downloadPath
+
+        Write-Host "Extracting reference assemblies..."
+        Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
+
+        Write-Host "Copying reference assemblies to target path..."
+        # The actual reference assemblies are usually in 'build\.NETFramework\v4.5' or similar within the NuGet package
+        # Adjust this source path if the structure is different after extraction.
+        Copy-Item -Path "$extractPath\build\.NETFramework\v4.5\*" -Destination $targetPath -Recurse -Force
+
+        Write-Host ".NET Framework 4.5 Reference Assemblies installation complete."
 
     - name: Setup MSBuild
       # Installs the necessary MSBuild tools. This action is still useful for setting up the environment.
