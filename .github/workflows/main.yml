@@ -15,7 +15,6 @@ on:
 jobs:
   build:
     # Use the latest Windows environment.
-    # The 'windows-2019' runner has been retired, so 'windows-latest' is used.
     runs-on: windows-latest
 
     steps:
@@ -23,10 +22,13 @@ jobs:
       # Clones the repository to the runner.
       uses: actions/checkout@v4
 
-    # Removed the explicit .NET Framework Developer Pack installation step
-    # as we are now relying on the pre-installed components of the runner.
-    # If .NET Framework 4.5 is still an issue, we might need to explore other installation methods
-    # or consider upgrading the project's target framework if possible.
+    - name: Install .NET Framework 4.5.2 Developer Pack via Chocolatey
+      # Installs the .NET Framework 4.5.2 Developer Pack using Chocolatey.
+      # This is a more reliable way to get older .NET Framework components on the runner.
+      shell: powershell
+      run: |
+        choco install dotnet4.5.2-devpack -y --no-progress
+        Write-Host ".NET Framework 4.5.2 Developer Pack installation via Chocolatey complete."
 
     - name: Setup MSBuild
       # Installs the necessary MSBuild tools. This action is still useful for setting up the environment.
